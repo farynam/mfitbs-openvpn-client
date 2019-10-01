@@ -1,7 +1,7 @@
 ---
 # tasks file for openvpn-client
 - include_role:
-    name: openvpn-generic
+    name: farynam.mfitbs_openvpn_generic
 
 - name: Copy ta key to the client
   shell: rsync -az --rsh="/usr/bin/sshpass -p {{ ansible_password }} ssh -o StrictHostKeyChecking=no -l root" "{{ hostvars[server_host]['ansible_default_ipv4']['address'] }}:{{ host_pki_dir }}/ta.key" "{{ host_pki_dir }}/ta.key"
