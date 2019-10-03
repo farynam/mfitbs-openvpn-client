@@ -1,7 +1,7 @@
 Role Name
 =========
 
-Tasks to generate openvpn client.
+mfitbs_openvpn_client
 
 Requirements
 ------------
