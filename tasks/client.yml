@@ -1,0 +1,75 @@
+- include_role:
+    name: farynam.mfitbs_openvpn_easyrsa
+
+- name: Create host pki dir
+  file:
+    path: "{{ host_pki_dir }}"
+    state: directory
+    mode: '0770'
+
+- name: Copy secret to client
+  copy:
+    src: "{{ LOCAL_REPO }}/ta.key"
+    dest: "{{ host_pki_dir }}/"
+    mode: 0600
+  register: cli_secret_result
+
+- name: Copy CA to the Client
+  copy:
+    src: "{{ LOCAL_REPO }}/ca.crt"
+    dest: "{{ host_pki_dir }}/"
+    mode: 0600
+  register: cli_ca_result
+
+- name: Copy Client cert to the machine
+  copy:
+    src: "{{ LOCAL_REPO }}/clients/issued/{{ ansible_host }}.crt"
+    dest: "{{ host_pki_dir }}/."
+    mode: 0600
+  register: cli_cert_result
+
+- name: Copy Client key to the Server
+  copy:
+    src: "{{ LOCAL_REPO }}/clients/private/{{ ansible_host }}.key"
+    dest: "{{ host_pki_dir }}/."
+    mode: 0600
+
+- name: Template Node type clients
+  template:
+    src: templates/node_client.conf
+    dest: "{{ OPEN_VPN_CFG }}/client.conf"
+    mode: '0660'
+    force : false
+  register: cli_tmpl_result
+
+- name: Make sure server has ccd dir
+  file:
+    path: "{{ OPEN_VPN_CFG }}/ccd"
+    state: directory
+    mode: '0770'
+  delegate_to: server
+  when: client_addr is defined
+
+- name: Template ccd
+  template:
+    src: templates/ccd.conf
+    dest: "{{ OPEN_VPN_CFG }}/ccd/{{ ansible_host }}"
+    mode: '0660'
+  delegate_to: server
+  when: client_addr is defined
+
+- name: Restart client
+  shell: systemctl restart openvpn@client.service
+  when: >
+    cli_secret_result.changed
+    or cli_ca_result.changed
+    or cli_cert_result.changed
+    or cli_tmpl_result.changed
+
+- name: Enable client
+  shell: systemctl enable openvpn@client.service
+  when: >
+    cli_secret_result.changed
+    or cli_ca_result.changed
+    or cli_cert_result.changed
+    or cli_tmpl_result.changed

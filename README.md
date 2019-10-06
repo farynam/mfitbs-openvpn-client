@@ -6,27 +6,18 @@ mfitbs_openvpn_client
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
-
-* farynam.mfitbs-openvpn-easyrsa
-* farynam.mfitbs-openvpn-generic
-
+N/A
 
 Role Variables
 --------------
 
 ###### EasyRSA host
 * easy_rsa_host - host on which easyrsa will be installed.
-* EASY_RSA_BIN - easyrsa script path.
-* ca_cn - easyrsa CA cert base file name.
-* PKI_DIR - easyrsa cert repo path
 
 ###### all
 * id_type - ID type (certficate field subject-alt-name) in cert can be DNS or IP
 * proto - proto for openvpm connections values:tcp,udp 
-* host_pki_dir - host PKI dir (where keys, certs, ... being kept).
-* dh - openvpn Diffie–Hellman file name base
-* dh_len - Diffie–Hellman param length. 
+* host_pki_dir - host PKI dir (where keys, certs, ... being kept). 
 * cipher - openvpn cipher.
 * log_status - openvpn status log.
 * log - openvpn log. 
@@ -34,18 +25,43 @@ Role Variables
 Dependencies
 ------------
 
-* mfitbs-openvpn-easyrsa
-* mfitbs-openvpn-generic
+* farynam.mfitbs-openvpn-easyrsa
 
 Example Playbook
 ----------------
 
-- name: Install client
-  hosts: server, target3, target4 #server because of variables
-  serial: 1 #easy rsa gets randomly messed without this
-  roles:
-  - role: openvpn-client
-    when: inventory_hostname != server_host
+* inventory
+
+
+    erh ansible_host=192.168.51.5 ansible_user=root ansible_password=qwerty ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+    [server]
+    
+    server ansible_host=192.168.51.4 ansible_user=root ansible_password=qwerty ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+    [client]
+    
+    client1 ansible_host=192.168.51.6 client_addr=10.8.0.2 client_mask=255.255.255.0 ansible_user=root ansible_password=qwerty ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+
+* playbook
+
+
+    - name: Test Client
+      hosts: client
+      roles:
+        - role: farynam.mfitbs_openvpn_client
+          vars:
+            server_port: 1194
+            server_host: 192.168.51.4
+            proto: tcp
+            cipher: AES-256-CBC
+            id_type: IP
+            easy_rsa_host: erh
+            host_pki_dir: /etc/pki/openvpn
+      tasks:
+
+
 
 License
 -------
