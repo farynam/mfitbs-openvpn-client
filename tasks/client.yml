@@ -28,13 +28,13 @@
     mode: 0600
   register: cli_cert_result
 
-- name: Copy Client key to the Server
+- name: Copy Client key to the Client
   copy:
     src: "{{ LOCAL_REPO }}/clients/private/{{ ansible_host }}.key"
     dest: "{{ host_pki_dir }}/."
     mode: 0600
 
-- name: Template Node type clients
+- name: Template client
   template:
     src: templates/node_client.conf
     dest: "{{ OPEN_VPN_CFG }}/client.conf"
