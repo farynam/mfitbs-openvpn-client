@@ -53,7 +53,6 @@ Example Playbook
         - role: farynam.mfitbs_openvpn_client
           vars:
             server_port: 1194
-            server_host: 192.168.51.4
             proto: tcp
             cipher: AES-256-CBC
             id_type: IP
